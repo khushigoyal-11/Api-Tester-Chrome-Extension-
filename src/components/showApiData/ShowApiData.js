@@ -1,156 +1,238 @@
-import axios from "axios";
 import React, { useState } from "react";
+import axios from "axios";
 import ReactJson from "react-json-view";
-import "../apishow.css";
-import Footer from "../footer/Footer";
+import "./apishow-dark.css";
 
-const ShowApiData = () => {
-  const [method, setMethod] = useState("GET");
-  const [apiUrl, setApiUrl] = useState();
-  const [apiResponse, setApiResponse] = useState({});
-  const [jsonData, setJsonData] = useState({});
-  const [error, setError] = useState();
-  const [jsonError, setJsonError] = useState("");
-  const [headerInputs, setHeaderInputs] = useState({
-    headerKey: "Accept",
-    headerValue: "*/*",
-  });
+export default function ShowApiData() {
+  // --- CORE STATE ---
+  const [method, setMethod]     = useState("GET");
+  const [apiUrl, setApiUrl]     = useState("");
+  const [jsonBody, setJsonBody] = useState("");
+  const [params, setParams]     = useState([{ key: "", value: "" }]);
+  const [headers, setHeaders]   = useState([{ key: "", value: "" }]);
+  const [auth, setAuth]         = useState({ type: "None", token: "" });
+  const [preScript, setPreScript]   = useState("");
+  const [testScript, setTestScript] = useState("");
+  const [apiResponse, setApiResponse] = useState(null);
+  const [error, setError] = useState("");
 
-  // input handler to set header values
-  const headerInputHandler = (e) => {
-    setHeaderInputs({ ...headerInputs, [e.target.name]: e.target.value });
+  // --- TABS STATE ---
+  const tabs = ["Params","Authorization","Headers","Body","Scripts"];
+  const [activeTab, setActiveTab] = useState(tabs[0]);
+
+  // --- HELPERS ---
+  const updateKV = (list, setList, idx, field, val) => {
+    const copy = [...list];
+    copy[idx][field] = val;
+    setList(copy);
   };
+  const addRow = (list, setList) => setList([...list, { key:"", value:"" }]);
 
-  // JSON input handler to set json data values
-  const jsonDataHandler = (e) => {
+  const submitHandler = async () => {
+    setError(""); setApiResponse(null);
+
+    // Pre‐request script
+    if (preScript.trim()) {
+      try {
+        // eslint-disable-next-line no-new-func
+        new Function(
+          "method","url","params","headers","body",
+          preScript
+        )(method, apiUrl, params, headers, jsonBody);
+      } catch(e){ console.warn(e) }
+    }
+
+    // Build params & headers objects
+    const paramsObj = params.reduce((o,{key,value})=> {
+      if (key) o[key] = value; return o;
+    }, {});
+    const headersObj = headers.reduce((o,{key,value})=> {
+      if (key) o[key] = value; return o;
+    }, {});
+    if (auth.type==="Bearer" && auth.token) {
+      headersObj["Authorization"] = `Bearer ${auth.token}`;
+    }
+    if (auth.type==="Basic" && auth.token) {
+      headersObj["Authorization"] = `Basic ${btoa(auth.token)}`;
+    }
+
+    // Parse JSON body
+    let data = null;
+    if (jsonBody.trim()) {
+      try { data = JSON.parse(jsonBody) }
+      catch { return setError("Invalid JSON body") }
+    }
+
+    // Fire Axios
     try {
-      setJsonData(e.target.value);
-      JSON.parse(e.target.value);
-      setJsonError("");
-    } catch (e) {
-      setJsonError("Error in JSON format");
+      const res = await axios({ method, url: apiUrl, params: paramsObj, headers: headersObj, ...(data && { data }) });
+      setApiResponse(res);
+
+      // Post‐response (test) script
+      if (testScript.trim()) {
+        try {
+          // eslint-disable-next-line no-new-func
+          new Function("response", testScript)(res);
+        } catch(e){ console.warn(e) }
+      }
+    } catch (err) {
+      setError(err.message);
     }
-  };
-
-  // function which do api call of respective methods, like GET, POST & DELETE
-  const apiCallHandler = async () => {
-    var keyHead = headerInputs.headerKey || "Accept";
-    var value = headerInputs.headerValue || "*/*";
-    if (method === "GET") {
-      try {
-        const res = await axios.get(apiUrl, {
-          headers: { [keyHead]: value },
-        });
-
-        setApiResponse(res);
-      } catch (error) {
-        setError(error.message);
-      }
-    } else if (method === "POST") {
-      try {
-        const res = await axios.post(apiUrl, jsonData, {
-          headers: { [keyHead]: value },
-        });
-
-        setApiResponse(res);
-      } catch (error) {
-        setError(error.message);
-      }
-    } else if (method === "DELETE") {
-      try {
-        const res = await axios.delete(apiUrl, jsonData, {
-          headers: { [keyHead]: value },
-        });
-
-        setApiResponse(res);
-      } catch (error) {
-        setError(error.message);
-      }
-    }
-  };
-
-  // submit handler to trigger apicallhandler
-  const submitHandler = () => {
-    setError("");
-    apiCallHandler();
   };
 
   return (
-    <div>
-      <div className='get-api-data'>
-        <select
-          onChange={(e) => setMethod(e.target.value)}
-          placeholder='Select method'>
-          select method
-          <option>GET</option>
-          <option>POST</option>
-          <option>DELETE</option>
-        </select>
+    <div className="api-tester-dark">
+      <h1>API Tester</h1>
+
+      {/* URL & Method */}
+      <div className="controls-dark">
         <input
-          placeholder='ENTER YOUR API'
-          onChange={(e) => setApiUrl(e.target.value)}
+          className="url-input-dark"
+          placeholder="Enter API URL..."
+          value={apiUrl}
+          onChange={e=>setApiUrl(e.target.value)}
         />
-        <button onClick={submitHandler}>Submit</button>
+        <select
+          className="method-select-dark"
+          value={method}
+          onChange={e=>setMethod(e.target.value)}
+        >
+          {["GET","POST","PUT","PATCH","DELETE"].map(m=>(
+            <option key={m}>{m}</option>
+          ))}
+        </select>
       </div>
-      <div className='header'>
-        <div className='header-container'>
-          <input
-            type='text'
-            placeholder='header key'
-            name='headerKey'
-            value={headerInputs.headerKey}
-            onChange={headerInputHandler}
-          />
-          <input
-            type='text'
-            name='headerValue'
-            value={headerInputs.headerValue}
-            placeholder='header value'
-            onChange={headerInputHandler}
+
+      {/* Tab Buttons */}
+      <div className="tab-nav">
+        {tabs.map(tab => (
+          <button
+            key={tab}
+            onClick={()=>setActiveTab(tab)}
+            className={activeTab===tab ? "tab-active" : ""}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Panels */}
+      {activeTab==="Params" && (
+        <div className="tab-panel">
+          {params.map((p,i)=>
+            <div key={i} className="kv-row">
+              <input
+                placeholder="Key" value={p.key}
+                onChange={e=>updateKV(params,setParams,i,"key",e.target.value)}
+              />
+              <input
+                placeholder="Value" value={p.value}
+                onChange={e=>updateKV(params,setParams,i,"value",e.target.value)}
+              />
+            </div>
+          )}
+          <button className="add-row-btn" onClick={()=>addRow(params,setParams)}>
+            + Add Param
+          </button>
+        </div>
+      )}
+
+      {activeTab==="Authorization" && (
+        <div className="tab-panel">
+          <select
+            value={auth.type}
+            onChange={e=>setAuth({ ...auth, type: e.target.value })}
+          >
+            {["None","Bearer","Basic"].map(t=>(
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+          {auth.type!=="None" &&
+            <input
+              type={auth.type==="Basic"?"text":"password"}
+              placeholder={auth.type==="Basic"?"user:pass":"Bearer token"}
+              value={auth.token}
+              onChange={e=>setAuth({ ...auth, token: e.target.value })}
+            />
+          }
+        </div>
+      )}
+
+      {activeTab==="Headers" && (
+        <div className="tab-panel">
+          {headers.map((h,i)=>
+            <div key={i} className="kv-row">
+              <input
+                placeholder="Key" value={h.key}
+                onChange={e=>updateKV(headers,setHeaders,i,"key",e.target.value)}
+              />
+              <input
+                placeholder="Value" value={h.value}
+                onChange={e=>updateKV(headers,setHeaders,i,"value",e.target.value)}
+              />
+            </div>
+          )}
+          <button className="add-row-btn" onClick={()=>addRow(headers,setHeaders)}>
+            + Add Header
+          </button>
+        </div>
+      )}
+
+      {activeTab==="Body" && (
+        <div className="tab-panel">
+          <textarea
+            className="body-input-dark"
+            placeholder="Request Body (JSON)"
+            value={jsonBody}
+            onChange={e=>setJsonBody(e.target.value)}
           />
         </div>
+      )}
+
+      {activeTab==="Scripts" && (
+        <div className="tab-panel">
+          <h4>Pre-Request Script</h4>
+          <textarea
+            className="script-input"
+            placeholder="// run before request"
+            value={preScript}
+            onChange={e=>setPreScript(e.target.value)}
+          />
+          <h4>Test Script</h4>
+          <textarea
+            className="script-input"
+            placeholder="// run after response"
+            value={testScript}
+            onChange={e=>setTestScript(e.target.value)}
+          />
+        </div>
+      )}
+
+      {/* Send Button */}
+      <button className="send-btn-dark" onClick={submitHandler}>
+        Send Request
+      </button>
+
+      {/* Response */}
+      <div className="response-dark">
+        {error && <div className="error-dark">{error}</div>}
+        {apiResponse && <>
+          <h2>Response</h2>
+          <div className="json-response-dark">
+            <ReactJson
+              src={{
+                status: apiResponse.status,
+                headers: apiResponse.headers,
+                data: apiResponse.data
+              }}
+              theme="monokai"
+              collapsed={2}
+              name={false}
+              enableClipboard={false}
+            />
+          </div>
+        </>}
       </div>
-      <div className='body-sec'>
-        <textarea
-          onChange={jsonDataHandler}
-          placeholder='Enter Data in JSON format'></textarea>
-        <div className='json-err'>{jsonError}</div>
-      </div>
-      <div className='response-cont'>
-        {error ? (
-          error
-        ) : apiResponse === undefined ? (
-          <h2>Response is undefined</h2>
-        ) : (
-          <>
-            <div className='response-data-sec'>
-              <h2>Headers :</h2>
-              <div className='json-response'>
-                <ReactJson
-                  src={apiResponse.headers}
-                  theme={"parasio"}
-                  collapsed={2}
-                  collapseStringsAfterLength={10}
-                />
-              </div>
-            </div>
-            <div className='response-data-sec'>
-              <h2>Data :</h2>
-              <div className='json-response'>
-                <ReactJson
-                  src={apiResponse.data}
-                  theme={"parasio"}
-                  collapsed={2}
-                  collapseStringsAfterLength={10}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-      <Footer />
     </div>
   );
-};
-
-export default ShowApiData;
+}

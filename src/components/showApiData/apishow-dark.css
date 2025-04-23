@@ -1,0 +1,171 @@
+/* Container */
+.api-tester-dark {
+    max-width: 800px;
+    margin: 2.5rem auto;
+    padding: 2rem;
+    background: #1e1e1e;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    color: #f1f1f1;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  /* Title */
+  .api-tester-dark h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+  }
+  
+  /* Controls row */
+  .controls-dark {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .url-input-dark,
+  .method-select-dark {
+    flex: 1;
+    padding: 0.85rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #2d2d2d;
+    color: #f1f1f1;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .url-input-dark:focus,
+  .method-select-dark:focus {
+    border-color: #ff5722;
+  }
+  
+  /* Body textarea */
+  .body-input-dark {
+    width: 100%;
+    min-height: 140px;
+    padding: 1rem;
+    font-size: 1rem;
+    font-family: monospace;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #2d2d2d;
+    color: #f1f1f1;
+    resize: vertical;
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Send button */
+  .send-btn-dark {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    background: #ff5722;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+  
+  .send-btn-dark:hover {
+    background: #ff784e;
+    transform: scale(1.03);
+  }
+  
+  /* Response area */
+  .response-dark {
+    margin-top: 2rem;
+  }
+  
+  .response-dark h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+    color: #ddd;
+  }
+  
+  /* JSON panel */
+  .json-response-dark {
+    background: #272822;
+    padding: 1rem;
+    border-radius: 8px;
+    max-height: 500px;
+    overflow: auto;
+  }
+  
+  /* Error message */
+  .error-dark {
+    color: #ff4c4c;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  /* Key/Value rows */
+  .kv-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .kv-row input {
+    flex: 1;
+    padding: 0.6rem;
+    background: #2d2d2d;
+    border: 1px solid #333;
+    color: #f1f1f1;
+    border-radius: 6px;
+  }
+  
+  /* "Add" buttons */
+  .add-row-btn {
+    background: none;
+    color: #ff5722;
+    border: none;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    font-weight: 500;
+  }
+  
+  /* Script textareas */
+  .script-input {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.8rem;
+    background: #2d2d2d;
+    border: 1px solid #333;
+    color: #f1f1f1;
+    border-radius: 6px;
+    font-family: monospace;
+    margin-bottom: 1rem;
+  }
+  
+  /* ----- TAB NAVIGATION ----- */
+  .tab-nav {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    justify-content: center;
+  }
+  .tab-nav button {
+    background: transparent;
+    border: none;
+    padding: 0.5rem 1rem;
+    color: #aaa;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .tab-nav button.tab-active {
+    color: #fff;
+    border-bottom: 2px solid #ff5722;
+  }
+  
+  /* TAB PANEL SPACING */
+  .tab-panel {
+    margin-bottom: 1.5rem;
+  }
+  

@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "ApiDesk",
-  "author": "Ayushi & Nishant",
+  "name": "Api Tester",
+  "author": "Khushi Goyal",
   "version": "1.0.1",
-  "description": "chrome extension to test api calls and stackoverflow search",
+  "description": "chrome extension to test api calls ",
   "action": {
-    "default_title": "ApiDesk",
+    "default_title": "Api Tester",
     "default_popup": "index.html",
     "default_icon": {
       "16": "logo16.png",
